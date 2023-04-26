@@ -2,24 +2,35 @@ from fastapi import FastAPI
 from pymongo import MongoClient
 from pymongo import MongoClient
 from pydantic import BaseModel
+from typing import Optional
 
 client = MongoClient("localhost:27017")
 
-db = client["cleaningstore"]
-collection = db["Cluster()"]
+db = client["DBs"]
+collection = db["Document"]
 
 class students(BaseModel):
     id:int
     name:str
     age:int
     gpa:float
+
+class updateItem(BaseModel):
+    name:Optional[str] = None
+    age:Optional[int] = None
+    gpa:Optional[float] = None
     
 
 app = FastAPI()
 
-t = collection.find().sort("age",-1).limit(1)
-for i in t:
-    print(i)
+# found = collection.find({},{"_id"})
+# F = []
+# for i in found:
+#     #print(i["_id"])
+#     F.append(i["_id"])
+# F.sort()
+# L = F[-1]+1
+# print(L)
 
 @app.get("/items/{item_id}")
 async def read_items(item_id:int):
@@ -59,6 +70,24 @@ async def insert(ss:students):
     found = collection.find_one({"_id":sid})
     return {"Success":sid,"item":found}
 
+@app.put("/change/{item_id}")
+async def update_item(item_id:int,ss:updateItem):
+    finder = collection.find_one({"_id":item_id})
+    if finder: 
+        if ss.name != None:
+            sname = ss.name
+            collection.update_one({"_id":item_id},{"$set":{"name":sname}})
+        if ss.age != None:
+            sage = ss.age
+            collection.update_one({"_id":item_id},{"$set":{"age":sage}})
+        if ss.gpa != None:
+            sgpa = ss.gpa 
+            collection.update_one({"_id":item_id},{"$set":{"gpa":sgpa}})
+    
+    finder2 = collection.find_one({"_id":item_id})
+    return {"updated":finder2}
+        
+    
 @app.delete("/delete/{item_id}")
 async def delete(item_id:int):
     finder = collection.find_one({"_id":item_id})
@@ -67,4 +96,15 @@ async def delete(item_id:int):
         return {"Deleted":item_id}
     else:
         return {"Error":"not found"}
+
+@app.delete("/delete-all")
+async def delete_all():
+    collection.delete_many({})
+    return {"Success":"All outed"}
+
+    # found = collection.find({},{"_id"})
+    
+    # for i in found:
+    #     print(i["_id"])
+    #     collection.delete_one({"_id":i["_id"]})
     

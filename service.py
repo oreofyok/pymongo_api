@@ -4,8 +4,8 @@ from pymongo import MongoClient
 
 client = MongoClient("localhost:27017")
 
-db = client["cleaningstore"]
-collection = db["Cluster()"]
+db = client["DBs"]
+collection = db["Document"]
 
 def read_items(item_id):
     finder = collection.find_one({"_id":item_id})
@@ -41,6 +41,24 @@ def insert(ss:m.students):
     found = collection.find_one({"_id":sid})
     return {"Success":sid,"item":found}
 
+
+def update_item(item_id:int,ss:m.updateItem):
+    finder = collection.find_one({"_id":item_id})
+    if finder: 
+        if ss.name != None:
+            sname = ss.name
+            collection.update_one({"_id":item_id},{"$set":{"name":sname}})
+        if ss.age != None:
+            sage = ss.age
+            collection.update_one({"_id":item_id},{"$set":{"age":sage}})
+        if ss.gpa != None:
+            sgpa = ss.gpa 
+            collection.update_one({"_id":item_id},{"$set":{"gpa":sgpa}})
+    
+    finder2 = collection.find_one({"_id":item_id})
+    return {"updated":finder2}
+
+
 def delete(item_id):
     finder = collection.find_one({"_id":item_id})
     if finder:
@@ -48,6 +66,14 @@ def delete(item_id):
         return {"Deleted":item_id}
     elif finder == False:
         return {"Error":"not found"}
+
+def delete_all():
+    collection.delete_many({})
+    return {"Success":"All outed"}
         
+    # found = collection.find({},{"_id"})
     
+    # for i in found:
+    #     print(i["_id"])
+    #     collection.delete_one({"_id":i["_id"]})
     

@@ -24,6 +24,15 @@ async def read_all():
 async def insert(ss:m.students):
     return s.insert(ss)
 
+@app.put("/change/{item_id}")
+async def update_item(item_id:int,ss:m.updateItem):
+    return s.update_item(item_id,ss)
+
 @app.delete("/delete/{item_id}")
 async def delete(item_id:int):
     return s.delete(item_id)
+
+@app.delete("/delete-all")
+async def delete_all():
+    return s.delete_all()
+        
